@@ -1,0 +1,20 @@
+{
+    "name": "paulinevos/raffle-server",
+    "description": "A websocket server that takes connections and picks a random winner from the connections",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Paulinevos\\RafflerServer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Pauline Vos",
+            "email": "pvos88@gmail.com"
+        }
+    ],
+    "require": {
+        "react/socket": "^1.11.0"
+    }
+}
