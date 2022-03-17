@@ -1,11 +1,11 @@
 {
-    "name": "paulinevos/raffle-server",
+    "name": "vos/raffle-server",
     "description": "A websocket server that takes connections and picks a random winner from the connections",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Paulinevos\\RafflerServer\\": "src/"
+            "Vos\\RaffleServer\\": "src/"
         }
     },
     "authors": [
