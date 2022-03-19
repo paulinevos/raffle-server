@@ -12,7 +12,7 @@ Connections should communicate through json encoded messages as specified under 
 ## Usage
 ```shell
 composer install
-php ./start.php
+php ./bin/start.php
 ```
 
 The server is now running on `localhost:8080`. 
