@@ -3,7 +3,7 @@
 namespace Vos\RaffleServer;
 
 use Ratchet\ConnectionInterface;
-use Vos\RaffleServer\Exception\PlayerActionNotAllowedException;
+use Vos\RaffleServer\Exception\UserActionNotAllowedException;
 use Vos\RaffleServer\Exception\UnexpectedDataException;
 use Vos\RaffleServer\Message\RegisterHost;
 use Vos\RaffleServer\Message\RegisterPlayer;
@@ -35,7 +35,6 @@ final class MessageHandler
         switch ($message) {
             case 'registerHost':
                 $host = RegisterHost::fromData($data);
-                echo "Raffle pool started with code " . $host->joinCode . PHP_EOL;
                 $this->pool->start($host->joinCode, $connection);
                 break;
             case 'registerPlayer':
@@ -45,7 +44,7 @@ final class MessageHandler
                 break;
             case 'pickWinner':
                 if (!$this->pool->isHost($connection)) {
-                    throw PlayerActionNotAllowedException::forPickingWinner();
+                    throw UserActionNotAllowedException::forPickingWinner();
                 }
                 $this->pool->pickWinner();
                 break;

@@ -4,8 +4,9 @@ namespace Vos\RaffleServer;
 
 use Ratchet\ConnectionInterface;
 use Exception;
-use Vos\RaffleServer\Exception\AddPlayerException;
-use Vos\RaffleServer\Exception\PlayerActionNotAllowedException;
+use Vos\RaffleServer\Exception\AddUserException;
+use Vos\RaffleServer\Exception\UserActionNotAllowedException;
+use Vos\RaffleServer\Exception\PlayerNotFoundException;
 
 final class RafflePool
 {
@@ -27,13 +28,14 @@ final class RafflePool
 
     public function close(): void
     {
+        $msg = json_encode(['message' => 'raffleEnded']);
         foreach ($this->players as $player) {
-            $player->connection->send('Raffle closed by host. Bye bye! 👋');
+            $player->connection->send($msg);
             $player->connection->close();
         }
 
         if ($this->host) {
-            $this->host->send('Raffle closed');
+            $this->notifyHost(json_encode($msg));
             $this->host->close();
         }
 
@@ -98,7 +100,7 @@ final class RafflePool
     public function start(string $joinCode, ConnectionInterface $host)
     {
         if ($this->isActive()) {
-            throw new Exception('Can\'t start raffle as it seems to be active?');
+            throw UserActionNotAllowedException::forStartingSecondPool();
         }
 
         if (count($this->players) > 0) {
@@ -108,6 +110,7 @@ final class RafflePool
         $this->joinCode = $joinCode;
         $this->host = $host;
         $this->notifyHost(json_encode(['message' => 'raffleStarted']));
+        echo "Raffle pool started with code " . $joinCode . PHP_EOL;
     }
 
     public function isHost(ConnectionInterface $host): bool {
@@ -117,20 +120,20 @@ final class RafflePool
     public function addPlayer(string $joinCode, Player $player): void
     {
         if (!$this->isActive()) {
-            throw AddPlayerException::forInactivePool();
+            throw AddUserException::forInactivePool();
         }
 
         if (count($this->players) >= $this->maxPlayers) {
-            throw AddPlayerException::forRafflePoolFull();
+            throw AddUserException::forRafflePoolFull();
         }
 
         if ($this->joinCode !== $joinCode) {
-            throw AddPlayerException::forIncorrectJoinCode($joinCode);
+            throw AddUserException::forIncorrectJoinCode($joinCode);
         }
 
         $hash = base64_encode($player->username);
         if (isset($this->players[$hash])) {
-            throw AddPlayerException::forDuplicateUsername($player->username);
+            throw AddUserException::forDuplicateUsername($player->username);
         }
 
         echo "Adding player to raffle pool\n";
@@ -151,7 +154,7 @@ final class RafflePool
             }
         }
 
-        throw new Exception('Can\'t remove player that isn\'t there');
+        throw new PlayerNotFoundException('Can\'t remove player that isn\'t there');
     }
 
     private function compileErrorMessage(string $message): string

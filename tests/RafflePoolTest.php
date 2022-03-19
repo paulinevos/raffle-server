@@ -4,7 +4,9 @@ namespace Vos\RaffleServer;
 
 use PHPUnit\Framework\TestCase;
 use Exception;
-use Vos\RaffleServer\Exception\AddPlayerException;
+use Vos\RaffleServer\Exception\AddUserException;
+use Vos\RaffleServer\Exception\PlayerNotFoundException;
+use Vos\RaffleServer\Exception\UserActionNotAllowedException;
 
 final class RafflePoolTest extends TestCase
 {
@@ -78,8 +80,7 @@ final class RafflePoolTest extends TestCase
     public function startPoolFailsForAlreadyActive(): void
     {
         $this->startPool();
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Can\'t start raffle as it seems to be active?');
+        $this->expectException(UserActionNotAllowedException::class);
 
         $this->startPool();
     }
@@ -100,7 +101,7 @@ final class RafflePoolTest extends TestCase
      */
     public function addPlayerFailsForInactivePool(): void
     {
-        $this->expectException(AddPlayerException::class);
+        $this->expectException(AddUserException::class);
         $this->expectExceptionMessageMatches('/No active raffle pool/');
         $this->addPlayer();
     }
@@ -112,7 +113,7 @@ final class RafflePoolTest extends TestCase
     {
         $this->startPool();
 
-        $this->expectException(AddPlayerException::class);
+        $this->expectException(AddUserException::class);
         $this->expectExceptionMessageMatches('/Sorry, the raffle pool is full!/');
 
         $this->addPlayer();
@@ -127,7 +128,7 @@ final class RafflePoolTest extends TestCase
     {
         $this->startPool();
 
-        $this->expectException(AddPlayerException::class);
+        $this->expectException(AddUserException::class);
         $this->expectExceptionMessageMatches('/No active raffle pool for code/');
         $this->pool->addPlayer('1235', new Player('boo', new MockConnection()));
     }
@@ -139,7 +140,7 @@ final class RafflePoolTest extends TestCase
     {
         $this->startPool();
 
-        $this->expectException(AddPlayerException::class);
+        $this->expectException(AddUserException::class);
         $this->expectExceptionMessageMatches('/Username "boo" already taken/');
 
         $this->addPlayer();
@@ -151,8 +152,7 @@ final class RafflePoolTest extends TestCase
      */
     public function removePlayerFailsForNonexistentPlayer(): void
     {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Can\'t remove player that isn\'t there');
+        $this->expectException(PlayerNotFoundException::class);
 
         $this->startPool();
         $this->pool->removePlayer(new MockConnection());

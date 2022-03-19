@@ -4,7 +4,7 @@ namespace Vos\RaffleServer;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use Ratchet\ConnectionInterface;
-use Vos\RaffleServer\Exception\PlayerActionNotAllowedException;
+use Vos\RaffleServer\Exception\UserActionNotAllowedException;
 use Vos\RaffleServer\Exception\UnexpectedDataException;
 use PHPUnit\Framework\TestCase;
 
@@ -79,7 +79,7 @@ final class MessageHandlerTest extends TestCase
      */
     public function failsIfPlayerAttemptsToPickWinner(): void
     {
-        $this->expectException(PlayerActionNotAllowedException::class);
+        $this->expectException(UserActionNotAllowedException::class);
         $this->handleMessage(json_encode([
             'message' => 'registerHost',
             'hostKey' => 'some-key',

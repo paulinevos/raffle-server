@@ -4,7 +4,7 @@ namespace Vos\RaffleServer\Exception;
 
 use Exception;
 
-final class UnexpectedDataException extends Exception implements PlayerException
+final class UnexpectedDataException extends Exception implements UserException
 {
     private const MSG = 'Unexpected data';
 

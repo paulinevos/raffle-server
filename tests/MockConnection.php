@@ -2,22 +2,30 @@
 
 namespace Vos\RaffleServer;
 
+use Monolog\Handler\HandlerInterface;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Ratchet\ConnectionInterface;
 
 final class MockConnection implements ConnectionInterface
 {
-    public $last = array(
-        'send'  => ''
-    , 'close' => false
-    );
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
-    public $remoteAddress = '127.0.0.1';
+    public function __construct(?HandlerInterface $testLogHandler = null)
+    {
+        $handler = $testLogHandler ?? new TestHandler();
+        $this->logger = new Logger('test', [$handler]);
+    }
 
     public function send($data) {
-        $this->last[__FUNCTION__] = $data;
+        $this->logger->info($data);
     }
 
     public function close() {
-        $this->last[__FUNCTION__] = true;
+        $this->logger->info('Connection closed');
     }
 }

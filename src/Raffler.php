@@ -4,7 +4,9 @@ namespace Vos\RaffleServer;
 
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
-use Vos\RaffleServer\Exception\PlayerException;
+use Vos\RaffleServer\Exception\UserException;
+use Throwable;
+use Vos\RaffleServer\Exception\PlayerNotFoundException;
 
 final class Raffler implements MessageComponentInterface
 {
@@ -15,7 +17,7 @@ final class Raffler implements MessageComponentInterface
     public function __construct(
         private readonly Options $options,
     ) {
-        $this->pool = new RafflePool($this->options->maxPlayers, $this->options->timeout);
+        $this->pool = new RafflePool($this->options->maxPlayers);
         $this->messageHandler = new MessageHandler($this->pool);
     }
 
@@ -23,7 +25,7 @@ final class Raffler implements MessageComponentInterface
     {
         try {
             $this->messageHandler->handleIncoming($msg, $connection);
-        } catch (PlayerException $e) {
+        } catch (UserException $e) {
             $connection->send(json_encode(
                 ['error' => $e->getMessage()]
             ));
@@ -35,20 +37,25 @@ final class Raffler implements MessageComponentInterface
         if ($this->connections >= $this->options->maxConnections) {
             $conn->send('Too many connections! Sorry.');
             $conn->close();
+            return;
         }
         $this->connections++;
     }
 
     function onClose(ConnectionInterface $conn): void
     {
-        $this->connections--;
-
         if ($this->pool->isHost($conn)) {
             $this->pool->close();
             return;
         }
 
-        $this->pool->removePlayer($conn);
+        try {
+            $this->pool->removePlayer($conn);
+        } catch (PlayerNotFoundException $e) {
+            // Do nothing, connection closed before player joined.
+        }
+
+        $this->connections--;
     }
 
     function onError(ConnectionInterface $conn, \Exception $e): void

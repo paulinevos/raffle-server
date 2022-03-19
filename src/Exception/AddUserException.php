@@ -4,7 +4,7 @@ namespace Vos\RaffleServer\Exception;
 
 use Exception;
 
-final class AddPlayerException extends Exception implements PlayerException
+final class AddUserException extends Exception implements UserException
 {
     public static function forInactivePool(): self
     {
