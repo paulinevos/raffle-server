@@ -1,13 +1,12 @@
 <?php
 
+namespace Vos\RaffleServer;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use React\Socket\ConnectionInterface;
+use Ratchet\ConnectionInterface;
 use Vos\RaffleServer\Exception\PlayerActionNotAllowedException;
 use Vos\RaffleServer\Exception\UnexpectedDataException;
-use Vos\RaffleServer\MessageHandler;
 use PHPUnit\Framework\TestCase;
-use Vos\RaffleServer\RafflePool;
 
 final class MessageHandlerTest extends TestCase
 {
@@ -16,8 +15,8 @@ final class MessageHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->pool = new RafflePool();
-        $this->connection = $this->createMock(ConnectionInterface::class);
+        $this->pool = new RafflePool(2);
+        $this->connection = new MockConnection();
     }
 
     /**
@@ -59,6 +58,7 @@ final class MessageHandlerTest extends TestCase
      */
     public function handlesPickWinner(): void
     {
+        $this->expectNotToPerformAssertions();
         $this->handleMessage(json_encode([
             'message' => 'registerHost',
             'hostKey' => 'some-key',
@@ -70,10 +70,6 @@ final class MessageHandlerTest extends TestCase
             'username' => 'pookie',
             'joinCode' => '1234'
         ]));
-
-        $this->connection->expects($this->exactly(6))
-            ->method('getRemoteAddress')
-            ->willReturn('tcp://1234');
 
         $this->handleMessage(json_encode(['message' => 'pickWinner']));
     }
@@ -96,11 +92,7 @@ final class MessageHandlerTest extends TestCase
             'joinCode' => '1234'
         ]));
 
-        $this->connection->expects($this->exactly(2))
-            ->method('getRemoteAddress')
-            ->willReturn('tcp://1234', 'tcp://5678');
-
-        $this->handleMessage(json_encode(['message' => 'pickWinner']));
+        $this->handleMessage(json_encode(['message' => 'pickWinner']), new MockConnection());
     }
 
     /**
@@ -147,8 +139,8 @@ final class MessageHandlerTest extends TestCase
         return new MessageHandler($this->pool);
     }
 
-    private function handleMessage(string $msg): void
+    private function handleMessage(string $msg, ?ConnectionInterface $connection = null): void
     {
-        $this->getMessageHandler()->handleIncoming($msg, $this->connection);
+        $this->getMessageHandler()->handleIncoming($msg, $connection ?? $this->connection);
     }
 }

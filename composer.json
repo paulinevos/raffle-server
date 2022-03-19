@@ -5,7 +5,12 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Vos\\RaffleServer\\": "src/"
+            "Vos\\RaffleServer\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Vos\\RaffleServer\\": "tests"
         }
     },
     "authors": [

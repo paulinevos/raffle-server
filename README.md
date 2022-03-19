@@ -48,7 +48,6 @@ the code that joining players will have to send.
   first disconnect.
 - The pool will be closed automatically when the host disconnects or when it times out (defaults to 1 hour).
   Players will automatically be disconnected as well.
-- A maximum amount of players applies. Currently, that amount is 80.
 - Usernames must be unique per pool so the host may be notified. 
 - In future versions of this raffle server, you'll be able to override defaults (e.g. port, win/loss message, timeout,
 max pool size, etc.).

@@ -39,8 +39,9 @@ final class MessageHandler
                 $this->pool->start($host->joinCode, $connection);
                 break;
             case 'registerPlayer':
-                $player = RegisterPlayer::fromData($data);
-                $this->pool->addConnection($player->joinCode, $connection);
+                $registerPlayer = RegisterPlayer::fromData($data);
+                $player = new Player($registerPlayer->username, $connection);
+                $this->pool->addPlayer($registerPlayer->joinCode, $player);
                 break;
             case 'pickWinner':
                 if (!$this->pool->isHost($connection)) {

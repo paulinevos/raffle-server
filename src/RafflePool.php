@@ -4,32 +4,31 @@ namespace Vos\RaffleServer;
 
 use Ratchet\ConnectionInterface;
 use Exception;
-use DateTimeImmutable;
-use Vos\RaffleServer\Message\RegisterPlayer;
+use Vos\RaffleServer\Exception\PlayerActionNotAllowedException;
 
 final class RafflePool
 {
-    private const MAX_CONNECTIONS = 80;
-
     /**
-     * @var ConnectionInterface[]
+     * @var Player[]
      */
-    private array $connections = [];
+    private array $players = [];
     private ?string $joinCode = null;
     private ?ConnectionInterface $host = null;
-    private readonly ?DateTimeImmutable $started;
-    private readonly ?DateTimeImmutable $ended;
+
+    public function __construct(private readonly int $maxPlayers)
+    {
+    }
 
     public function isActive(): bool
     {
-        return $this->joinCode !== null && isset($this->started) && !isset($this->ended);
+        return $this->joinCode !== null && $this->host !== null;
     }
 
     public function close(): void
     {
-        foreach ($this->connections as $connection) {
-            $connection->send('Raffle closed by host. Bye bye! 👋');
-            $connection->close();
+        foreach ($this->players as $player) {
+            $player->connection->send('Raffle closed by host. Bye bye! 👋');
+            $player->connection->close();
         }
 
         if ($this->host) {
@@ -37,63 +36,57 @@ final class RafflePool
             $this->host->close();
         }
 
-        $this->connections = [];
+        $this->players = [];
         $this->joinCode = null;
         $this->host = null;
-        $this->ended = new DateTimeImmutable();
-
         echo "Pool's closed\n";
     }
 
     public function pickWinner(): void
     {
-        if (count($this->connections) < 1) {
+        if (count($this->players) < 1) {
             throw new Exception('There\'s no players bestie :/');
         }
 
-        $players = $this->connections;
+        $players = $this->players;
         shuffle($players);
         $winner = $players[0];
 
-        echo '🏆 And the winner is... ' . 'dljsdklgj' .'!' .PHP_EOL;
+        echo sprintf("🏆 And the winner is... [%s]!\n",$winner->username);
         $this->notifyPlayers($winner);
-        $this->notifyHostOfWinner($winner);
+        $this->notifyHost(
+            json_encode([
+                'message' => 'winner',
+                'connection' => $winner->username,
+            ])
+        );
     }
 
-    private function notifyPlayers(ConnectionInterface $winner): void
+    private function notifyPlayers(Player $winner): void
     {
-        foreach ($this->connections as $connection) {
-            if ($winner === $connection) {
-                $connection->send('You won!');
+        foreach ($this->players as $player) {
+            if ($winner === $player) {
+                $player->connection->send('You won!');
             } else {
-                $connection->send('Better luck next time...');
+                $player->connection->send('Better luck next time...');
             }
         }
     }
 
-    private function notifyHostOfNewPlayer(ConnectionInterface $connection, RegisterPlayer $player): void
+    private function notifyHost(string $msg): void
     {
-        if ($this->host === null) {
-            throw new Exception('A host must be present to notify them');
-        }
-
-        $this->host->send(json_encode([
-            'message' => 'newPlayer',
-            'username'=> $player->username,
-            'connection' => 'ldsjgkldsjg',
-        ]));
+        $this->ensureHostPresent();
+        $this->host->send($msg);
     }
 
-    private function notifyHostOfWinner(ConnectionInterface $connection): void
+    /**
+     * @throws Exception
+     */
+    private function ensureHostPresent(): void
     {
         if ($this->host === null) {
             throw new Exception('No host is present');
         }
-
-        $this->host->send(json_encode([
-            'message' => 'winner',
-            'connection' => 'dkslgjksdg',
-        ]));
     }
 
     public function start(string $joinCode, ConnectionInterface $host)
@@ -102,51 +95,63 @@ final class RafflePool
             throw new Exception('Can\'t start raffle as it seems to be active?');
         }
 
-        if (count($this->connections) > 0) {
+        if (count($this->players) > 0) {
             throw new Exception('There shouldn\'t be any connections in the pool before starting');
         }
 
         $this->joinCode = $joinCode;
-        $this->started = new DateTimeImmutable();
         $this->host = $host;
+        $this->notifyHost(json_encode(['message' => 'raffleStarted']));
     }
 
     public function isHost(ConnectionInterface $host): bool {
         return $this->host !== null && $this->host === $host;
     }
 
-    public function addConnection(string $joinCode, ConnectionInterface $connection): void
+    public function addPlayer(string $joinCode, Player $player): void
     {
         if (!$this->isActive()) {
-            $connection->send($this->compileErrorMessage('No active raffle pool'));
-            $connection->close();
+            $player->connection->send($this->compileErrorMessage('No active raffle pool'));
+            $player->connection->close();
+            return;
+        }
+
+        if (count($this->players) >= $this->maxPlayers) {
+            $player->connection->send($this->compileErrorMessage('Sorry, the raffle pool is full!'));
+            $player->connection->close();
             return;
         }
 
         if ($this->joinCode !== $joinCode) {
-            $connection->send($this->compileErrorMessage('No active raffle pool for code ' . $joinCode));
-            $connection->close();
+            $player->connection->send($this->compileErrorMessage('No active raffle pool for code ' . $joinCode));
+            $player->connection->close();
             return;
         }
 
-        if (count($this->connections) >= self::MAX_CONNECTIONS) {
-            $connection->send($this->compileErrorMessage('Sorry, the raffle pool is full!'));
-            $connection->close();
-            return;
+        $hash = base64_encode($player->username);
+        if (isset($this->players[$hash])) {
+            throw PlayerActionNotAllowedException::forDuplicateUsername($player->username);
         }
 
         echo "Adding player to raffle pool\n";
-        $this->connections['kldgklsdg'] = $connection;
+        $this->notifyHost(json_encode(['message' => 'newPlayer', 'username'=> $player->username,]));
+        $this->players[base64_encode($player->username)] = $player;
     }
 
-    public function removeConnection(ConnectionInterface $connection): void
+    public function removePlayer(ConnectionInterface $connection): void
     {
-        $remoteAddress = ';dlsjsdlg';
-        if (!isset($this->connections[$remoteAddress])) {
-            throw new Exception('Can\'t remove connection that isn\'t there');
+        foreach ($this->players as $key => $player) {
+            if ($player->connection === $connection) {
+                unset($this->players[$key]);
+                $this->notifyHost(json_encode([
+                    'message' => 'playerLeft',
+                    'username'=> $player->username,
+                ]));
+                return;
+            }
         }
 
-        unset($this->connections[$remoteAddress]);
+        throw new Exception('Can\'t remove player that isn\'t there');
     }
 
     private function compileErrorMessage(string $message): string
