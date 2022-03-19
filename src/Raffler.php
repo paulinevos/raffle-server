@@ -35,7 +35,7 @@ final class Raffler implements MessageComponentInterface
     function onOpen(ConnectionInterface $conn): void
     {
         if ($this->connections >= $this->options->maxConnections) {
-            $conn->send('Too many connections! Sorry.');
+            $conn->send(json_encode(['error' => 'Too many connections! Sorry.']));
             $conn->close();
             return;
         }
@@ -60,7 +60,7 @@ final class Raffler implements MessageComponentInterface
 
     function onError(ConnectionInterface $conn, \Exception $e): void
     {
-        $conn->send($e->getMessage());
+        $conn->send(json_encode(['error' => $e->getMessage()]));
         $conn->close();
     }
 }

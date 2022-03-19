@@ -74,9 +74,9 @@ final class RafflePool
     {
         foreach ($this->players as $player) {
             if ($winner === $player) {
-                $player->connection->send('You won!');
+                $player->connection->send(json_encode(['message' => 'You won!']));
             } else {
-                $player->connection->send('Better luck next time...');
+                $player->connection->send(json_encode(['message' => 'Better luck next time...']));
             }
         }
     }

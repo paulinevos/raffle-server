@@ -44,7 +44,8 @@ the code that joining players will have to send.
 5. The pool will remain open to pick more winners, as long as the host is connected and the pool isn't timed out.
 
 ### Further usage notes
-
+- Messages sent from the raffle server to clients will always be json encoded and will have either a `message` or an 
+`error` property.
 - One pool may be active at any given time (may change in future versions). To start a new pool, the current host must 
   first disconnect.
 - The pool will be closed automatically when the host disconnects or when it times out (defaults to 1 hour).
