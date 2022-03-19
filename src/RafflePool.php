@@ -4,6 +4,7 @@ namespace Vos\RaffleServer;
 
 use Ratchet\ConnectionInterface;
 use Exception;
+use Vos\RaffleServer\Exception\AddPlayerException;
 use Vos\RaffleServer\Exception\PlayerActionNotAllowedException;
 
 final class RafflePool
@@ -42,6 +43,11 @@ final class RafflePool
         echo "Pool's closed\n";
     }
 
+    public function playerCount(): int
+    {
+        return count($this->players);
+    }
+
     public function pickWinner(): void
     {
         if (count($this->players) < 1) {
@@ -52,7 +58,7 @@ final class RafflePool
         shuffle($players);
         $winner = $players[0];
 
-        echo sprintf("🏆 And the winner is... [%s]!\n",$winner->username);
+        echo sprintf("🏆 And the winner is... %s!\n",$winner->username);
         $this->notifyPlayers($winner);
         $this->notifyHost(
             json_encode([
@@ -111,26 +117,20 @@ final class RafflePool
     public function addPlayer(string $joinCode, Player $player): void
     {
         if (!$this->isActive()) {
-            $player->connection->send($this->compileErrorMessage('No active raffle pool'));
-            $player->connection->close();
-            return;
+            throw AddPlayerException::forInactivePool();
         }
 
         if (count($this->players) >= $this->maxPlayers) {
-            $player->connection->send($this->compileErrorMessage('Sorry, the raffle pool is full!'));
-            $player->connection->close();
-            return;
+            throw AddPlayerException::forRafflePoolFull();
         }
 
         if ($this->joinCode !== $joinCode) {
-            $player->connection->send($this->compileErrorMessage('No active raffle pool for code ' . $joinCode));
-            $player->connection->close();
-            return;
+            throw AddPlayerException::forIncorrectJoinCode($joinCode);
         }
 
         $hash = base64_encode($player->username);
         if (isset($this->players[$hash])) {
-            throw PlayerActionNotAllowedException::forDuplicateUsername($player->username);
+            throw AddPlayerException::forDuplicateUsername($player->username);
         }
 
         echo "Adding player to raffle pool\n";

@@ -10,9 +10,4 @@ final class PlayerActionNotAllowedException extends Exception implements PlayerE
     {
         return new self('Only a host can pick a winner');
     }
-
-    public static function forDuplicateUsername(string $username): self
-    {
-        return new self(sprintf('Username "%s" already taken', $username));
-    }
 }
