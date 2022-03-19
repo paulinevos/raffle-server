@@ -19,10 +19,11 @@ The server is now running on `localhost:8080`.
 
 ### Start a raffle
 
-1. Connect to the server:
-    ```shell
-    telnet localhost 8080
+1. Connect to the server using a web socket client. To try it out, open a browser tab, and in the console type:
+    ```javascript
+    ws = new WebSocket('ws://localhost:8080')
     ```
+   You can now start sending messages to the server with `ws.send()`
 
 2. Register as a host by sending a `registerHost` message. This will start the raffle pool. The join code provided is
 the code that joining players will have to send.
