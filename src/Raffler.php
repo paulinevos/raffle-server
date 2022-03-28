@@ -24,7 +24,8 @@ final class Raffler implements MessageComponentInterface
     function onMessage(ConnectionInterface $connection, $msg): void
     {
         try {
-            $this->messageHandler->handleIncoming($msg, $connection);
+            echo "Message received: ${msg}\n";
+            $this->messageHandler->handleIncoming($msg, $connection, $this->options);
         } catch (UserException $e) {
             $connection->send(json_encode(
                 ['error' => $e->getMessage()]

@@ -5,6 +5,7 @@ namespace Vos\RaffleServer;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\TestHandler;
 use PHPUnit\Framework\TestCase;
+use Vos\RaffleServer\Exception\InvalidHostKey;
 
 final class RafflerTest extends TestCase
 {
@@ -13,7 +14,12 @@ final class RafflerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->raffler = new Raffler(Options::fromArray(['max-conn' => 1]));
+        $this->raffler = new Raffler(
+            Options::fromArray([
+                'max-conn' => 1,
+                'password' => '5678',
+            ])
+        );
         $this->logHandler = new TestHandler();
     }
 
@@ -104,6 +110,23 @@ final class RafflerTest extends TestCase
         $this->raffler->onOpen(new MockConnection($this->logHandler));
 
         $this->assertCount(0, $this->logHandler->getRecords());
+    }
+
+    /**
+     * @test
+     */
+    public function failsForInvalidHostKey(): void
+    {
+        $host = new MockConnection($this->logHandler);
+        $this->raffler->onOpen($host);
+        $this->raffler->onMessage($host, json_encode([
+            'message' => 'registerHost',
+            'hostKey' => '1234',
+            'joinCode' => '1234'
+        ]));
+
+        $this->assertTrue($this->logHandler->hasInfoThatContains('Provided host key is invalid'));
+        $this->assertFalse($this->logHandler->hasInfoThatContains('raffleStarted'));
     }
 
     /**

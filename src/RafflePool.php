@@ -5,6 +5,7 @@ namespace Vos\RaffleServer;
 use Ratchet\ConnectionInterface;
 use Exception;
 use Vos\RaffleServer\Exception\AddUserException;
+use Vos\RaffleServer\Exception\InvalidHostKey;
 use Vos\RaffleServer\Exception\UserActionNotAllowedException;
 use Vos\RaffleServer\Exception\PlayerNotFoundException;
 
@@ -97,8 +98,12 @@ final class RafflePool
         }
     }
 
-    public function start(string $joinCode, ConnectionInterface $host)
+    public function start(string $joinCode, string $givenHostKey, string $actualHostKey, ConnectionInterface $host)
     {
+        if ($givenHostKey !== $actualHostKey) {
+            throw InvalidHostKey::forKey();
+        }
+
         if ($this->isActive()) {
             throw UserActionNotAllowedException::forStartingSecondPool();
         }

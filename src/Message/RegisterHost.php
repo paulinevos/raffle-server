@@ -10,7 +10,10 @@ final class RegisterHost
     private const KEY_HOST_PASSWORD = 'hostKey';
     public const MUST_CONTAIN = [self::KEY_CODE, self::KEY_HOST_PASSWORD];
 
-    public function __construct(public readonly string $joinCode,){}
+    public function __construct(
+        public readonly string $joinCode,
+        public readonly string $hostKey,
+    ){}
 
     /**
      * @throws UnexpectedDataException
@@ -19,6 +22,7 @@ final class RegisterHost
         RequiredKeysValidator::ensureContains($data, ...self::MUST_CONTAIN);
         return new self(
             $data[self::KEY_CODE],
+            $data[self::KEY_HOST_PASSWORD],
         );
     }
 }

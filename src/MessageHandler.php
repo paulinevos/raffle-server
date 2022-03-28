@@ -3,6 +3,7 @@
 namespace Vos\RaffleServer;
 
 use Ratchet\ConnectionInterface;
+use Vos\RaffleServer\Exception\InvalidHostKey;
 use Vos\RaffleServer\Exception\UserActionNotAllowedException;
 use Vos\RaffleServer\Exception\UnexpectedDataException;
 use Vos\RaffleServer\Message\RegisterHost;
@@ -18,7 +19,7 @@ final class MessageHandler
     /**
      * @throws UnexpectedDataException
      */
-    public function handleIncoming(string $msg, ConnectionInterface $connection): void
+    public function handleIncoming(string $msg, ConnectionInterface $connection, Options $options): void
     {
         if (in_array(trim($msg), self::EXIT)) {
             $connection->close();
@@ -35,7 +36,7 @@ final class MessageHandler
         switch ($message) {
             case 'registerHost':
                 $host = RegisterHost::fromData($data);
-                $this->pool->start($host->joinCode, $connection);
+                $this->pool->start($host->joinCode, $host->hostKey, $options->hostKey, $connection);
                 break;
             case 'registerPlayer':
                 $registerPlayer = RegisterPlayer::fromData($data);
