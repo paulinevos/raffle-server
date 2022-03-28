@@ -5,7 +5,6 @@ namespace Vos\RaffleServer;
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
 use Vos\RaffleServer\Exception\UserException;
-use Throwable;
 use Vos\RaffleServer\Exception\PlayerNotFoundException;
 
 final class Raffler implements MessageComponentInterface
