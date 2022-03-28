@@ -114,7 +114,7 @@ final class RafflePool
 
         $this->joinCode = $joinCode;
         $this->host = $host;
-        $this->notifyHost(json_encode(['message' => 'raffleStarted']));
+        $this->notifyHost(json_encode(['message' => 'raffleStarted', 'joinCode' => $joinCode]));
         echo "Raffle pool started with code " . $joinCode . PHP_EOL;
     }
 
