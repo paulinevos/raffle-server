@@ -26,7 +26,7 @@ final class MessageHandlerTest extends TestCase
     {
         $this->handleMessage(json_encode([
             'message' => 'registerHost',
-            'hostKey' => 'some-key',
+            'hostKey' => 'admin',
             'joinCode' => '1234',
         ]));
 
@@ -42,7 +42,7 @@ final class MessageHandlerTest extends TestCase
 
         $this->handleMessage(json_encode([
             'message' => 'registerHost',
-            'hostKey' => 'some-key',
+            'hostKey' => 'admin',
             'joinCode' => '1234'
         ]));
 
@@ -61,7 +61,7 @@ final class MessageHandlerTest extends TestCase
         $this->expectNotToPerformAssertions();
         $this->handleMessage(json_encode([
             'message' => 'registerHost',
-            'hostKey' => 'some-key',
+            'hostKey' => 'admin',
             'joinCode' => '1234'
         ]));
 
@@ -82,7 +82,7 @@ final class MessageHandlerTest extends TestCase
         $this->expectException(UserActionNotAllowedException::class);
         $this->handleMessage(json_encode([
             'message' => 'registerHost',
-            'hostKey' => 'some-key',
+            'hostKey' => 'admin',
             'joinCode' => '1234'
         ]));
 
@@ -130,7 +130,8 @@ final class MessageHandlerTest extends TestCase
         $this->expectException(UnexpectedDataException::class);
         $this->getMessageHandler()->handleIncoming(
             json_encode(['message' => 'registerPlayer']),
-            $this->createMock(ConnectionInterface::class)
+            $this->createMock(ConnectionInterface::class),
+            Options::fromArray([])
         );
     }
 
@@ -139,8 +140,12 @@ final class MessageHandlerTest extends TestCase
         return new MessageHandler($this->pool);
     }
 
-    private function handleMessage(string $msg, ?ConnectionInterface $connection = null): void
+    private function handleMessage(string $msg, ?ConnectionInterface $connection = null, ?Options $options = null): void
     {
-        $this->getMessageHandler()->handleIncoming($msg, $connection ?? $this->connection);
+        $this->getMessageHandler()->handleIncoming(
+            $msg,
+            $connection ?? $this->connection,
+            $options ?? Options::fromArray([]),
+        );
     }
 }

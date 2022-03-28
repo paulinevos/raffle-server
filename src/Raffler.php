@@ -29,6 +29,9 @@ final class Raffler implements MessageComponentInterface
             $connection->send(json_encode(
                 ['error' => $e->getMessage()]
             ));
+        } catch (\Exception $e) {
+            $connection->send(json_encode(['error' => 'Server error: ' . $e->getMessage()]));
+            throw $e;
         }
     }
 

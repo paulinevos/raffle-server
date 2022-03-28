@@ -143,6 +143,7 @@ final class RafflePool
 
         echo "Adding player to raffle pool\n";
         $this->notifyHost(json_encode(['message' => 'newPlayer', 'username'=> $player->username,]));
+        $player->connection->send(json_encode(['message' => 'joinedRaffle']));
         $this->players[base64_encode($player->username)] = $player;
     }
 
