@@ -1,0 +1,1 @@
+web: php ./bin/start.php key=$HOST_KEY
