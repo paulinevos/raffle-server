@@ -1,1 +1,1 @@
-web: php ./bin/start.php key=$HOST_KEY
+web: php ./bin/start.php key=$HOST_KEY port=$PORT
