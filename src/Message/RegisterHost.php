@@ -13,12 +13,14 @@ final class RegisterHost
     public function __construct(
         public readonly string $joinCode,
         public readonly string $hostKey,
-    ){}
+    ) {
+    }
 
     /**
      * @throws UnexpectedDataException
      */
-    public static function fromData(array $data) {
+    public static function fromData(array $data)
+    {
         RequiredKeysValidator::ensureContains($data, ...self::MUST_CONTAIN);
         return new self(
             $data[self::KEY_CODE],

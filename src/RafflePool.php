@@ -61,13 +61,15 @@ final class RafflePool
         shuffle($players);
         $winner = $players[0];
 
-        echo sprintf("🏆 And the winner is... %s!\n",$winner->username);
+        echo sprintf("🏆 And the winner is... %s!\n", $winner->username);
         $this->notifyPlayers($winner);
         $this->notifyHost(
-            json_encode([
+            json_encode(
+                [
                 'message' => 'winner',
                 'connection' => $winner->username,
-            ])
+                ]
+            )
         );
     }
 
@@ -118,7 +120,8 @@ final class RafflePool
         echo "Raffle pool started with code " . $joinCode . PHP_EOL;
     }
 
-    public function isHost(ConnectionInterface $host): bool {
+    public function isHost(ConnectionInterface $host): bool
+    {
         return $this->host !== null && $this->host === $host;
     }
 
@@ -142,7 +145,7 @@ final class RafflePool
         }
 
         echo "Adding player to raffle pool\n";
-        $this->notifyHost(json_encode(['message' => 'newPlayer', 'username'=> $player->username,]));
+        $this->notifyHost(json_encode(['message' => 'newPlayer', 'username' => $player->username,]));
         $player->connection->send(json_encode(['message' => 'joinedRaffle']));
         $this->players[base64_encode($player->username)] = $player;
     }
@@ -152,10 +155,14 @@ final class RafflePool
         foreach ($this->players as $key => $player) {
             if ($player->connection === $connection) {
                 unset($this->players[$key]);
-                $this->notifyHost(json_encode([
-                    'message' => 'playerLeft',
-                    'username'=> $player->username,
-                ]));
+                $this->notifyHost(
+                    json_encode(
+                        [
+                        'message' => 'playerLeft',
+                        'username' => $player->username,
+                        ]
+                    )
+                );
                 return;
             }
         }

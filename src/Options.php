@@ -16,7 +16,8 @@ final class Options
         public readonly int $timeout,
         public readonly int $port,
         public readonly string $hostKey,
-    ) {}
+    ) {
+    }
 
     public static function fromArray(array $options): self
     {

@@ -21,11 +21,13 @@ final class MockConnection implements ConnectionInterface
         $this->logger = new Logger('test', [$handler]);
     }
 
-    public function send($data) {
+    public function send($data)
+    {
         $this->logger->info($data);
     }
 
-    public function close() {
+    public function close()
+    {
         $this->logger->info('Connection closed');
     }
 }

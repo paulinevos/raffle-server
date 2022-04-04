@@ -160,7 +160,7 @@ final class RafflePoolTest extends TestCase
 
     private function startPool(): void
     {
-        $this->pool->start('1234', 'admin', 'admin',  new MockConnection());
+        $this->pool->start('1234', 'admin', 'admin', new MockConnection());
     }
 
     private function addPlayer(): void

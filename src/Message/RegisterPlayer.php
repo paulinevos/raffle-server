@@ -19,7 +19,8 @@ final class RegisterPlayer
     /**
      * @throws UnexpectedDataException
      */
-    public static function fromData(array $data) {
+    public static function fromData(array $data)
+    {
         RequiredKeysValidator::ensureContains($data, ...self::MUST_CONTAIN);
         return new self(
             $data[self::KEY_CODE],

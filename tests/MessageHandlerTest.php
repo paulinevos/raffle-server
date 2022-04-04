@@ -77,7 +77,7 @@ final class MessageHandlerTest extends TestCase
     /**
      * @test
      */
-    public function handlesPing(): /*by doing nothing...*/ void
+    public function handlesPing(): void /*by doing nothing...*/
     {
         $this->handleMessage('ping');
         $this->assertTrue($this->logHandler->hasInfo('pong'));
