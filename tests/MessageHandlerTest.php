@@ -77,6 +77,15 @@ final class MessageHandlerTest extends TestCase
     /**
      * @test
      */
+    public function handlesPing(): /*by doing nothing...*/ void
+    {
+        $this->handleMessage('ping');
+        $this->assertTrue($this->logHandler->hasInfo('pong'));
+    }
+
+    /**
+     * @test
+     */
     public function failsIfPlayerAttemptsToPickWinner(): void
     {
         $this->expectException(UserActionNotAllowedException::class);

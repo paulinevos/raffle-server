@@ -12,6 +12,7 @@ use Vos\RaffleServer\Message\RegisterPlayer;
 final class MessageHandler
 {
     private const EXIT = ['q', 'quit', 'exit', ':q'];
+
     public function __construct(private readonly RafflePool $pool)
     {
     }
@@ -21,6 +22,11 @@ final class MessageHandler
      */
     public function handleIncoming(string $msg, ConnectionInterface $connection, Options $options): void
     {
+        if (trim($msg) === 'ping') {
+            $connection->send('pong');
+            return;
+        }
+
         if (in_array(trim($msg), self::EXIT)) {
             $connection->close();
             return;
