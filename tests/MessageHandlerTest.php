@@ -2,6 +2,7 @@
 
 namespace Vos\RaffleServer;
 
+use Monolog\Handler\TestHandler;
 use PHPUnit\Framework\MockObject\MockObject;
 use Ratchet\ConnectionInterface;
 use Vos\RaffleServer\Exception\UserActionNotAllowedException;
@@ -12,11 +13,13 @@ final class MessageHandlerTest extends TestCase
 {
     private RafflePool $pool;
     private ConnectionInterface|MockObject $connection;
+    private TestHandler $logHandler;
 
     protected function setUp(): void
     {
         $this->pool = new RafflePool(2);
-        $this->connection = new MockConnection();
+        $this->logHandler = new TestHandler();
+        $this->connection = new MockConnection($this->logHandler);
     }
 
     /**
@@ -38,8 +41,6 @@ final class MessageHandlerTest extends TestCase
      */
     public function handlesRegisterPlayer(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $this->handleMessage(json_encode([
             'message' => 'registerHost',
             'hostKey' => 'admin',
@@ -51,6 +52,8 @@ final class MessageHandlerTest extends TestCase
             'username' => 'pookie',
             'joinCode' => '1234'
         ]));
+
+        $this->assertTrue($this->logHandler->hasInfoThatContains('joinedRaffle'));
     }
 
     /**
@@ -58,7 +61,6 @@ final class MessageHandlerTest extends TestCase
      */
     public function handlesPickWinner(): void
     {
-        $this->expectNotToPerformAssertions();
         $this->handleMessage(json_encode([
             'message' => 'registerHost',
             'hostKey' => 'admin',
@@ -72,6 +74,7 @@ final class MessageHandlerTest extends TestCase
         ]));
 
         $this->handleMessage(json_encode(['message' => 'pickWinner']));
+        $this->assertTrue($this->logHandler->hasInfoThatContains('You won!'));
     }
 
     /**
