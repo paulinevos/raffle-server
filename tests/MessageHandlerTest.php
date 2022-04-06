@@ -54,6 +54,7 @@ final class MessageHandlerTest extends TestCase
         ]));
 
         $this->assertTrue($this->logHandler->hasInfoThatContains('joinedRaffle'));
+        $this->assertTrue($this->logHandler->hasInfoThatContains('username'));
     }
 
     /**
