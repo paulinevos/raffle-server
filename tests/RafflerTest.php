@@ -5,7 +5,6 @@ namespace Vos\RaffleServer;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\TestHandler;
 use PHPUnit\Framework\TestCase;
-use Vos\RaffleServer\Exception\InvalidHostKey;
 
 final class RafflerTest extends TestCase
 {
