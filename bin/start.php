@@ -21,6 +21,7 @@ $server = IoServer::factory(
     $options->port
 );
 
+echo 'Listening on port ' . $options->port . PHP_EOL;
 $server->run();
 
 function parseOptions(array $argv): Options
