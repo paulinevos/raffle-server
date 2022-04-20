@@ -67,7 +67,7 @@ final class RafflePool
             json_encode(
                 [
                 'message' => 'winner',
-                'connection' => $winner->username,
+                'username' => $winner->username,
                 ]
             )
         );
