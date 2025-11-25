@@ -3,6 +3,7 @@
     "description": "A websocket server that takes connections and picks a random winner from the connections",
     "type": "project",
     "license": "MIT",
+    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "Vos\\RaffleServer\\": "src"
@@ -20,7 +21,7 @@
         }
     ],
     "require": {
-        "cboden/ratchet": "^0.4.4",
+        "cboden/ratchet": "v0.5.x-dev",
         "monolog/monolog": "^2.4"
     },
     "require-dev": {

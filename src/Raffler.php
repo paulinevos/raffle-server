@@ -20,19 +20,19 @@ final class Raffler implements MessageComponentInterface
         $this->messageHandler = new MessageHandler($this->pool);
     }
 
-    public function onMessage(ConnectionInterface $connection, $msg): void
+    public function onMessage(ConnectionInterface $from, $msg): void
     {
         try {
-            echo "Message received: ${msg}\n";
-            $this->messageHandler->handleIncoming($msg, $connection, $this->options);
+            echo "Message received: {$msg}\n";
+            $this->messageHandler->handleIncoming($msg, $from, $this->options);
         } catch (UserException $e) {
-            $connection->send(
+            $from->send(
                 json_encode(
                     ['error' => $e->getMessage()]
                 )
             );
         } catch (\Exception $e) {
-            $connection->send(json_encode(['error' => 'Server error: ' . $e->getMessage()]));
+            $from->send(json_encode(['error' => 'Server error: ' . $e->getMessage()]));
             throw $e;
         }
     }
@@ -63,7 +63,7 @@ final class Raffler implements MessageComponentInterface
         $this->connections--;
     }
 
-    public function onError(ConnectionInterface $conn, \Exception $e): void
+    public function onError(ConnectionInterface $conn, \Throwable $e): void
     {
         $conn->send(json_encode(['error' => $e->getMessage()]));
         $conn->close();
